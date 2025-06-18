@@ -1,7 +1,9 @@
-def read_file(filename: str) -> str:
-    with open(filename, "r") as f:
+def read_binary_file(filename: str) -> bytes:
+    """Read a file in binary mode and return bytes"""
+    with open(filename, "rb") as f:
         return f.read()
 
-def write_file(filename: str, content: str):
-    with open(filename, "w") as f:
+def write_binary_file(filename: str, content: bytes):
+    """Write binary content to a file"""
+    with open(filename, "wb") as f:
         f.write(content)
