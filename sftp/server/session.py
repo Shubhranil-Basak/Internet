@@ -11,10 +11,14 @@ class FTPSession:
 
     def send(self, msg):
         self.conn.sendall(msg.encode())
+    
+    def send_bytes(self, data: bytes):
+        self.conn.sendall(data)
 
-    def recv(self, size=1024):
-        return self.conn.recv(size).decode()
-
+    def recv(self, size=1024, raw=False):
+        data = self.conn.recv(size)
+        return data if raw else data.decode()
+    
     def process_command(self, command):
         if command.upper().startswith("USER "):
             self.username = command[5:].strip()
@@ -37,15 +41,30 @@ class FTPSession:
             if not self.logged_in:
                 return "530 Not logged in\n"
             filename = command[4:].strip()
-            return handle_get(filename)
+            self.send_bytes(handle_get(filename))
+            return ""
 
         elif command.upper().startswith("PUT "):
             if not self.logged_in:
                 return "530 Not logged in\n"
             filename = command[4:].strip()
             self.send("150 Ready to receive file\n")
-            content = self.recv(4096)
-            return handle_put(filename, content)
+
+            # Receive file size first
+            size_line = self.recv()
+            try:
+                file_size = int(size_line.strip())
+            except ValueError:
+                return "550 Invalid file size\n"
+
+            file_data = b''
+            while len(file_data) < file_size:
+                chunk = self.recv(min(4096, file_size - len(file_data)), raw=True)
+                if not chunk:
+                    break
+                file_data += chunk
+
+            return handle_put(filename, file_data)
 
         elif command.upper() == "QUIT":
             return "221 Goodbye\n"
