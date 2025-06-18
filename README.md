@@ -3,3 +3,4 @@ My take on making a virtual internet by putting the theory I learned while study
 
 HTTP is done, I will implement a few more protocols then move to transport layer
 FTP modified to handle binaries
+Working on Email protocols. SMTP is done. Need to fix POP3 modularization. I might look into IMAP
