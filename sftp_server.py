@@ -1,6 +1,6 @@
 import socket
 import threading
-from sftp.server.core import FTPSession
+from sftp.server.session import FTPSession
 
 def handle_client(conn, addr):
     print(f"[+] Connection from {addr}")
