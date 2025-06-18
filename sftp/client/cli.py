@@ -1,5 +1,5 @@
 from .core import FTPClient
-from .utils import read_file, write_file
+from .utils import read_binary_file, write_binary_file
 
 def main():
     client = FTPClient()
@@ -17,20 +17,26 @@ def main():
         elif command.upper().startswith("PUT "):
             filename = command[4:].strip()
             try:
-                data = read_file(filename)
+                data = read_binary_file(filename)
                 res = client.send_command(command, data)
                 print(res['message'])
             except FileNotFoundError:
                 print("Local file not found.")
+            except Exception as e:
+                print(f"Error uploading file: {e}")
 
         elif command.upper().startswith("GET "):
             filename = command[4:].strip()
-            res = client.send_command(command)
-            if res["code"] == 200:
-                write_file(filename, res["body"])
-                print(f"File '{filename}' downloaded.")
-            else:
-                print(res["message"])
+            try:
+                res = client.send_command(command)
+                if res["code"] == 200:
+                    file_data = res["body"]
+                    write_binary_file(filename, file_data)
+                    print(f"File '{filename}' downloaded successfully.")
+                else:
+                    print(res["message"])
+            except Exception as e:
+                print(f"Error downloading file: {e}")
 
         else:
             res = client.send_command(command)
