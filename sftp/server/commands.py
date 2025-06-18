@@ -8,14 +8,15 @@ def handle_list():
 def handle_get(filename):
     filepath = os.path.join(FILE_DIR, filename)
     if os.path.isfile(filepath):
-        with open(filepath, "r") as f:
+        with open(filepath, "rb") as f:
             content = f.read()
-        return f"200 OK\n{content}\n"
+        header = f"200 OK\n{len(content)}\n".encode()
+        return header + content
     else:
-        return "550 File not found\n"
+        return b"550 File not found\n"
 
-def handle_put(filename, content):
+def handle_put(filename, file_data):
     filepath = os.path.join(FILE_DIR, filename)
-    with open(filepath, "w") as f:
-        f.write(content)
+    with open(filepath, "wb") as f:
+        f.write(file_data)
     return "226 File upload complete\n"
