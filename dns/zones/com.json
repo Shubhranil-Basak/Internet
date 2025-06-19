@@ -1,0 +1,8 @@
+{
+    "apple.com": {
+        "forward": [
+            "localhost",
+            6001
+        ]
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "com": {
+        "forward": [
+            "localhost",
+            6000
+        ]
+    },
+    "org": {
+        "forward": [
+            "localhost",
+            6002
+        ]
+    }
+}
