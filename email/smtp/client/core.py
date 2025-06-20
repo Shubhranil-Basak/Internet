@@ -9,7 +9,9 @@ class SMTPClient:
     def connect(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn.connect((self.host, self.port))
-        print(self.conn.recv(1024).decode().strip())
+        if self.conn.recv(1024).decode() != "220":
+            raise Exception("Failed to connect to SMTP server")
+        print(220, "Connected to SMTP server")
 
     def send_mail(self, sender, recipient, subject, body):
         self.conn.sendall(f"HELO client\r\n".encode())
