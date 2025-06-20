@@ -1,31 +1,39 @@
 from email.smtp.server.core import SMTPServer
 
+MAILBOX_DIR = "mailboxes"
+
 if __name__ == "__main__":
     server = SMTPServer()
-    
-    print("Starting SMTP server...")
     server.socket.listen()
-    print(f"SMTP Server running on port {server.port}")
-
+    print(f"SMTP server listening on {server.host}:{server.port}")
+    
     while True:
         conn, addr = server.socket.accept()
+        print("done")
         print(f"Connection from {addr}")
-        conn.sendall(b"220 Welcome to the SMTP server\r\n")
-        
-        sender = recipient = ""
-        data_lines = []
+        conn.sendall(b"220")
+
+        sender = ""
+        recipient = ""
 
         while True:
             data = conn.recv(1024).decode().strip()
             if not data:
                 break
-            
-            if data.upper().startswith("RCPT TO:"):
-                recipient = data.split(":", 1)[1].strip().strip("<>")
-            elif data.upper().startswith("MAIL FROM:"):
-                sender = data.split(":", 1)[1].strip()
-            elif data.upper() == "DATA":
-                conn.sendall(b"354 End with . on a line\r\n")
+
+            data_upper = data.upper()
+
+            if data_upper.startswith("HELO"):
+                response = server.handle_helo(data)
+
+            elif data_upper.startswith("MAIL FROM:"):
+                sender, response = server.handle_mail_from(data)
+
+            elif data_upper.startswith("RCPT TO:"):
+                recipient, response = server.handle_rcpt_to(data)
+
+            elif data_upper == "DATA":
+                conn.sendall(server.handle_data_start())
                 buffer = ""
                 while True:
                     chunk = conn.recv(1024).decode()
@@ -35,18 +43,17 @@ if __name__ == "__main__":
                 data_body = buffer.strip().splitlines()
                 if data_body[-1] == ".":
                     data_body.pop()
-                content = f"From: {sender}\nTo: {recipient}\n" + "\n".join(data_body)
-                server.save_email(recipient, content)
-            elif data.upper() == "QUIT":
-                response = server.parse_command(data)
+                response = server.process_data_body(data_body, sender, recipient)
+
+            elif data_upper == "QUIT":
+                response = server.handle_quit()
                 conn.sendall(response)
                 break
+
             else:
-                response = b"500 Command not recognized\r\n"
+                response = server.handle_unknown()
 
-            response = server.parse_command(data)
             conn.sendall(response)
-        
-        conn.close()
 
+        conn.close()
         print(f"Connection from {addr} closed")
