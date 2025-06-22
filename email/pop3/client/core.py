@@ -5,18 +5,17 @@ class POP3Client:
         self.host = host
         self.port = port
         self.conn = None
-
-    def connect(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn.connect((self.host, self.port))
+
+    def connect(self):
         print(self.conn.recv(1024).decode().strip())
 
-    def login(self, email, password=""):
+    def login(self, email, password):
         self.conn.sendall(f"USER {email}\r\n".encode())
         print(self.conn.recv(1024).decode().strip())
         self.conn.sendall(f"PASS {password}\r\n".encode())
         a = self.conn.recv(1024).decode().strip()
-        print(a)
         return a.startswith("+OK")
 
     def list_messages(self):
