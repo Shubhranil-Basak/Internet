@@ -1,8 +1,6 @@
 import os
 import socket
 
-MAILBOX_DIR = "mailboxes"
-
 class SMTPServer:
     def __init__(self, host='localhost', port=2525):
         self.host = host
@@ -25,9 +23,9 @@ class SMTPServer:
     def handle_data_start(self):
         return b"354 End with . on a line\r\n"
 
-    def process_data_body(self, data_body_lines, sender, recipient):
+    def process_data_body(self, data_body_lines, sender, recipient, MAILBOX_DIR):
         content = f"From: {sender}\nTo: {recipient}\n" + "\n".join(data_body_lines)
-        self.save_email(recipient, content)
+        self.save_email(recipient, content, MAILBOX_DIR)
         return b"250 Message received\r\n"
 
     def handle_quit(self):
@@ -36,7 +34,7 @@ class SMTPServer:
     def handle_unknown(self):
         return b"500 Command not recognized\r\n"
 
-    def save_email(self, recipient, content):
+    def save_email(self, recipient, content, MAILBOX_DIR):
         mailbox = os.path.join(MAILBOX_DIR, recipient)
         os.makedirs(mailbox, exist_ok=True)
         index = len(os.listdir(mailbox)) + 1
