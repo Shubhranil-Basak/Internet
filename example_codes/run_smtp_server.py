@@ -9,7 +9,6 @@ if __name__ == "__main__":
     
     while True:
         conn, addr = server.socket.accept()
-        print("done")
         print(f"Connection from {addr}")
         conn.sendall(b"220")
 
@@ -43,7 +42,7 @@ if __name__ == "__main__":
                 data_body = buffer.strip().splitlines()
                 if data_body[-1] == ".":
                     data_body.pop()
-                response = server.process_data_body(data_body, sender, recipient)
+                response = server.process_data_body(data_body, sender, recipient, MAILBOX_DIR)
 
             elif data_upper == "QUIT":
                 response = server.handle_quit()
